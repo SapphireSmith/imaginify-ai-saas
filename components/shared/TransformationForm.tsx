@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -27,8 +28,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { aspectRatioOptions, defaultValues, transformationTypes } from "@/constants"
 import { CustomField } from "./CustomFields"
-import { useState } from "react"
-import { AspectRatioKey, debounce } from "@/lib/utils"
+import { useState, useTransition } from "react"
+import { AspectRatioKey, debounce, deepMergeObjects } from "@/lib/utils"
+import { updateCredits } from "@/lib/actions/user.actions"
 
 
 export const formSchema = z.object({
@@ -47,6 +49,8 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isTransforming, setIsTransforming] = useState(false)
   const [transformationConfig, setTransformationConfig] = useState(config)
+
+  const [isPending, startTransition] = useTransition();
 
 
 
@@ -95,10 +99,24 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
           [fieldName === 'prompt' ? 'prompt' : 'to']: value
         }
       }))
+
+      return onChangeField(value)
     }, 1000)
   }
 
-  const onTransformHandler = () => {
+  //TODO: Return to updateCredits
+  const onTransformHandler = async () => {
+    setIsTransforming(true);
+
+    setTransformationConfig(
+      deepMergeObjects(newTransformation, transformationConfig)
+    )
+
+    setNewTransformation(null)
+
+    startTransition(async () => {
+      // await updateCredits(userId, creditFee)
+    })
 
   }
 
